@@ -1,0 +1,138 @@
+- name: sudo apt update
+  apt:
+    update_cache: yes
+
+
+- name: install zip         
+  apt:                              
+    name: zip                 
+    state: present                  
+
+
+- name: download sonarqube file 
+  get_url:
+    url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.9.6.zip
+    dest: /sonarqube
+
+
+- name: extract sonarqube file
+  unarchive:
+    src: /sonarqube
+    dest: /
+    remote_src: yes
+
+
+- name: Remove tar file
+  file:
+    path: /sonarqube
+    state: absent
+
+
+- name: move the unzipped files to /opt/sonarqube directory
+  command: mv /sonarqube-7.9.6 /opt/sonarqube
+
+
+- name: add group
+  group:
+    name: sonar
+    state: present 
+
+
+- name: add user
+  user:
+    name: sonar
+    group: sonar
+    home: /opt/sonarqube
+
+
+- name: change the ownership of sonarqube to sonar user
+  command: "chown sonar:sonar /opt/sonarqube -R" 
+
+
+- name: uncomment line in sonarqube configuration file
+  lineinfile:
+    path: /opt/sonarqube/conf/sonar.properties
+    regexp: '^#sonar.jdbc.username='
+    line: 'sonar.jdbc.username=sonar'
+    state: present
+
+
+- name: uncomment line in sonarqube configuration file
+  lineinfile:
+    path: /opt/sonarqube/conf/sonar.properties
+    regexp: '^#sonar.jdbc.password='
+    line: 'sonar.jdbc.password=my_strong_password'
+    state: present
+
+
+- name: add line in sonarqube configuration file
+  lineinfile:
+    path: /opt/sonarqube/conf/sonar.properties
+    insertafter: 'sonar.jdbc.password=my_strong_password'
+    line: 'sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube'
+    state: present
+
+
+- name: uncomment line in sonarqube script file
+  lineinfile:
+    path: /opt/sonarqube/bin/linux-x86-64/sonar.sh
+    regexp: '^#RUN_AS_USER='
+    line: 'RUN_AS_USER=sonar'
+    state: present
+
+
+- name: copy sonar.service
+  copy:
+    src: sonar.service
+    dest: /etc/systemd/system/sonar.service
+
+
+- name: Restart sonarqube
+  service:
+    name: sonar
+    state: started
+    enabled: yes
+
+
+# - name: add lines in sysctl configuration file.
+#   lineinfile:
+#     path: /etc/sysctl.conf
+#     line: "{{ item }}"
+#     state: present
+#     loop:
+#       - "vm.max_map_count=262144"
+#       - "fs.file-max=65536"
+#       - "ulimit -n 65536"
+#       - "ulimit -u 4096"
+
+
+- name: add line in sysctl configuration file
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'vm.max_map_count=262144'
+    state: present
+
+
+- name: add line in sysctl configuration file
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'fs.file-max=65536'
+    state: present
+
+
+- name: add line in sysctl configuration file
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'ulimit -n 65536'
+    state: present
+
+
+- name: add line in sysctl configuration file
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'ulimit -u 4096'
+    state: present
+
+
+- name: reboot machine
+  reboot:

@@ -1,0 +1,88 @@
+- name: sudo apt update
+  apt:
+    update_cache: yes
+
+
+- name: install openjdk and wget          
+  apt:                              
+    name: "{{item}}"                  
+    state: present                  
+  loop: 
+    - openjdk-8-jdk
+    - wget
+
+
+- name: create app directory
+  file:
+    path: /app
+    state: directory
+    
+
+- name: download nexus file 
+  get_url:
+    url: https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+    dest: /app/nexus.tar.gz
+
+
+- name: extract nexus file
+  unarchive:
+    src: /app/nexus.tar.gz
+    dest: /app
+    remote_src: yes
+
+
+- name: Remove tar file
+  file:
+    path: /app/nexus.tar.gz
+    state: absent
+
+
+# - name: rename  untared file to nexus
+#   command: mv /app/nexus-3.47.1-01 /app/nexus
+
+
+- name: create new user nexus
+  user:
+    name: nexus
+
+
+# - name: change the ownership of sonatype-work to nexus user                 # not done by this method ??
+#   file:
+#     path: /app/sonatype-work
+#     owner: nexus
+#     group: nexus
+
+
+# - name: change the ownership of nexus to nexus user                         # not done by this method ??                 
+#   file:
+#     path: /app/nexus
+#     owner: nexus
+#     group: nexus
+
+
+- name: change the ownership of sonatype-work to nexus user
+  command: "chown -R nexus:nexus /app/sonatype-work" 
+
+
+- name: change the ownership of nexus to nexus user
+  command: "chown -R nexus:nexus /app/nexus"
+        
+
+- name: uncomment line in nexus.rc
+  lineinfile:
+    path: /app/nexus/bin/nexus.rc
+    regexp: '^#run_as_user=""'
+    line: 'run_as_user="nexus"'
+    state: present
+
+
+- name: copy nexus.service
+  copy:
+    src: nexus.service
+    dest: /etc/systemd/system/nexus.service
+
+
+- name: Restart nexus
+  service:
+    name: nexus
+    state: started

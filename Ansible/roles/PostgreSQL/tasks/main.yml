@@ -1,0 +1,95 @@
+- name: sudo apt update
+  apt:
+    update_cache: yes
+
+
+- name: install openjdk and wget          
+  apt:                              
+    name: "{{item}}"                  
+    state: present                  
+  loop: 
+    - openjdk-11-jdk
+    - wget
+    - python3-pip
+    - python3-psycopg2
+
+
+- name: add the PostgreSQL repository
+  command: sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+
+
+- name: add the PostgreSQL signing key.
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+
+- name: install postgresql     
+  apt:                              
+    name: "{{item}}"                  
+    state: present                  
+  loop: 
+    - postgresql
+    - postgresql-contrib
+
+
+- name: enable postgresql
+  service:
+    name: postgresql
+    enabled: yes
+
+
+- name: start postgresql
+  service:
+    name: postgresql
+    state: started
+
+
+- name: password for postgresql
+  user:
+    name: postgres
+    password: "{{password}}"
+
+  
+- name: create new user sonar
+  user:
+    name: sonar
+
+
+- name: change lines for error
+  replace:
+    path: /etc/postgresql/14/main/pg_hba.conf
+    regexp:  "local   all             postgres                                peer"
+    replace: "local   all             postgres                                trust"
+
+
+- name: change lines for error
+  replace:
+    path: /etc/postgresql/14/main/pg_hba.conf
+    regexp:  "local   all             all                                     peer"
+    replace: "local   all             all                                     md5"
+
+
+- name: restart postgresql
+  service:
+    name: postgresql
+    state: restarted
+
+
+- name: create a sonarqube database 
+  postgresql_db:
+      name: sonarqube
+      login_user: postgres
+      login_password: "{{password}}"
+      template: template0
+
+
+- name: grant all privillages to sonar
+  postgresql_user:
+      db: sonarqube
+      name: sonar
+      password: "{{my_strong_password}}"
+      priv: ALL
+      expires: 'infinity'
+
+
