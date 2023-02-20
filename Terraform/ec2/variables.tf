@@ -19,7 +19,7 @@ variable "ec2_type" {
 }
 
 variable "ec2" {
-  type        = map
+  type        = map(any)
   description = "instance arguments"
 }
 

@@ -37,13 +37,13 @@ module "ec2" {
   security_group = "ec2 security group"
   vpcID          = module.network.vpc_id
   ec2_type       = "t2.medium"
-  ami            = "ami-0557a15b87f6559cf"        
+  ami            = "ami-0557a15b87f6559cf"
 
 
   ec2 = {
-    "basion-host" = {subnetID = module.network.public_subnet2_id, publicIP = true},
-    "sonarqube-instance" = {subnetID = module.network.private_subnet1_id, publicIP = false},
-    "nexus-instance" = {subnetID = module.network.private_subnet2_id, publicIP = false}
+    "basion-host"        = { subnetID = module.network.public_subnet2_id, publicIP = true },
+    "sonarqube-instance" = { subnetID = module.network.private_subnet1_id, publicIP = false },
+    "nexus-instance"     = { subnetID = module.network.private_subnet2_id, publicIP = false }
   }
 
 }
@@ -54,10 +54,9 @@ module "loadbalancer" {
   vpcID       = module.network.vpc_id
   target_type = "instance"
 
-  instanceID = {
-    "nexus-id"      = module.ec2.nexus_ec2_id
-    "sonatqube-id"  = module.ec2.sonarqube_ec2_id
-  }
+
+  nexus-id = module.ec2.nexus_ec2_id
+  sonar-id = module.ec2.sonarqube_ec2_id
 
   security_group = "loadBalancer security group"
   public_cidr    = "0.0.0.0/0"
@@ -71,12 +70,12 @@ module "loadbalancer" {
   privateSubnet2 = module.network.private_subnet2_id
 
   target_group = "target-group"
-  
+
   load_balancer_type = "application"
   load_balancer_name = "load-balancer"
-  ip_address_type = "ipv4"
-  public-subnet-id1 = module.network.public_subnet1_id
-  public-subnet-id2 = module.network.public_subnet2_id
+  ip_address_type    = "ipv4"
+  public-subnet-id1  = module.network.public_subnet1_id
+  public-subnet-id2  = module.network.public_subnet2_id
 
   securityID = module.ec2.ec2_sg_id
 

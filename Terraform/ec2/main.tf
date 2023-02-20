@@ -36,14 +36,6 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = [var.public_cidr]
   }
 
-  ingress {
-    description = "ssh"
-    from_port   = 65535
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = [var.public_cidr]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -59,12 +51,12 @@ resource "aws_security_group" "ec2_sg" {
 # install ec2 machines
 resource "aws_instance" "ec2" {
   ami                         = var.ami
-  for_each = var.ec2
+  for_each                    = var.ec2
   instance_type               = var.ec2_type
   subnet_id                   = each.value.subnetID
   associate_public_ip_address = each.value.publicIP
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  key_name = "ansible"
+  key_name                    = "ansible"
 
   tags = {
     Name = each.key

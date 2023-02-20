@@ -1,8 +1,8 @@
-# - name: install nexus      
-#   hosts: nexus-ec2               
-#   become: true                         
-#   roles:
-#     - role: roles/nexus
+- name: install nexus      
+  hosts: nexus-ec2               
+  become: true                         
+  roles:
+    - role: roles/nexus
 
 
 - name: install PostgreSQL and sonarqube      

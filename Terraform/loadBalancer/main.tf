@@ -1,24 +1,24 @@
 # target group
 resource "aws_lb_target_group" "target-group" {
-  target_type = var.target_type  
-  name        = var.target_group 
+  target_type = var.target_type
+  name        = var.target_group
   port        = var.port80
   protocol    = var.protocol-Http
   vpc_id      = var.vpcID
-  
+
 }
 
 # attach instances to target group
 resource "aws_lb_target_group_attachment" "nexus-ec2-target-group" {
   target_group_arn = aws_lb_target_group.target-group.arn
-  target_id = "i-04e53c9e73e8f21fe"
-  port = 8081
+  target_id        = var.nexus-id
+  port             = 8081
 }
 
 resource "aws_lb_target_group_attachment" "sonarqube-ec2-target-group" {
   target_group_arn = aws_lb_target_group.target-group.arn
-  target_id = "i-012777f183278a6ac"
-  port = 9000
+  target_id        = var.sonar-id
+  port             = 9000
 }
 
 
@@ -26,11 +26,11 @@ resource "aws_lb_target_group_attachment" "sonarqube-ec2-target-group" {
 resource "aws_lb" "alb" {
   load_balancer_type = var.load_balancer_type
   name               = var.load_balancer_name
-  internal           = false    
-  ip_address_type = var.ip_address_type
+  internal           = false
+  ip_address_type    = var.ip_address_type
 
-  security_groups    = [var.securityID]
-  subnets            = [ var.public-subnet-id1, var.public-subnet-id2 ]
+  security_groups = [var.securityID]
+  subnets         = [var.public-subnet-id1, var.public-subnet-id2]
 
 }
 

@@ -37,8 +37,8 @@
     state: absent
 
 
-# - name: rename  untared file to nexus
-#   command: mv /app/nexus-3.47.1-01 /app/nexus
+- name: rename  untared file to nexus
+  command: mv /app/nexus-3.47.1-01 /app/nexus
 
 
 - name: create new user nexus
